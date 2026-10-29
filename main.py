@@ -1,30 +1,27 @@
 import telebot
-from telebot import types, custom_filters
-from telebot.handler_backends import State, StatesGroup
-from telebot.storage import StateMemoryStorage
 from config import TOKEN
 
-bot = telebot.TeleBot(TOKEN, state_storage=StateMemoryStorage())
-bot.add_custom_filter(custom_filters.StateFilter(bot))
+bot = telebot.TeleBot(TOKEN, state_storage=telebot.storage.StateMemoryStorage())
+bot.add_custom_filter(telebot.custom_filters.StateFilter(bot))
 
 SAVOLLAR = [["Python'da ro'yxat qaysi qavsda yoziladi?", ["( )", "[ ]", "{ }"], 1],
 ["2 ** 3 nechaga teng?", ["6", "8", "9"], 1],
 ["Bot tokenini kim beradi?", ["@BotFather", "@Python", "Google"], 0],]
 
-class Quiz(StatesGroup):
-    ism = State()
-    savol = State()
+class Quiz(telebot.handler_backends.StatesGroup):
+    ism = telebot.handler_backends.State()
+    savol = telebot.handler_backends.State()
 
 def menyu():
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.row("🎮 Boshlash", "ℹ️ Yordam")
     return kb
 
 def savol_yubor(chat_id, i):
     matn, variantlar, _ = SAVOLLAR[i]
-    kb = types.InlineKeyboardMarkup()
+    kb = telebot.types.InlineKeyboardMarkup()
     for j, v in enumerate(variantlar):
-        kb.add(types.InlineKeyboardButton(v, callback_data=f"javob_{j}"))
+        kb.add(telebot.types.InlineKeyboardButton(v, callback_data=f"javob_{j}"))
     bot.send_message(chat_id, f"{i + 1}-savol: {matn}", reply_markup=kb)
 
 @bot.message_handler(commands=["start"])
@@ -51,7 +48,7 @@ def cancel(message):
 @bot.message_handler(func=lambda m: m.text == "🎮 Boshlash")
 def boshlash(message):
     bot.set_state(message.from_user.id, Quiz.ism, message.chat.id)
-    bot.send_message(message.chat.id, "Ismingiz?", reply_markup=types.ReplyKeyboardRemove())
+    bot.send_message(message.chat.id, "Ismingiz?", reply_markup=telebot.types.ReplyKeyboardRemove())
 
 @bot.message_handler(state=Quiz.ism)
 def ism_qabul(message):
